@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>বয়স গণনা — আপনার জীবনের হিসাব</title>
+<meta name="description" content="জন্মতারিখ দিয়ে বছর, মাস, দিন, ঘন্টা, মিনিট, সেকেন্ডে আপনার বয়স এবং পরবর্তী জন্মদিন পর্যন্ত বাকি সময় জেনে নিন।">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#151C33;
+    --ink-soft:#4A5573;
+    --paper:#F1F3F8;
+    --surface:#FFFFFF;
+    --line:#D8DDEA;
+    --marigold:#E8940C;
+    --alta:#C6453C;
+    --glow:rgba(232,148,12,.14);
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --ink:#ECEFF8;
+      --ink-soft:#9AA3BE;
+      --paper:#101527;
+      --surface:#19203A;
+      --line:#2B3454;
+      --marigold:#FFB434;
+      --alta:#F0756A;
+      --glow:rgba(255,180,52,.12);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#ECEFF8;
+    --ink-soft:#9AA3BE;
+    --paper:#101527;
+    --surface:#19203A;
+    --line:#2B3454;
+    --marigold:#FFB434;
+    --alta:#F0756A;
+    --glow:rgba(255,180,52,.12);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;
+    font-size:17px;
+    line-height:1.7;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(16px,4vw,32px) 72px}
+
+  header{margin-bottom:34px}
+  .mark{
+    display:inline-block;width:34px;height:34px;border-radius:50%;
+    background:var(--marigold);position:relative;margin-bottom:14px;
+  }
+  .mark::after{
+    content:"";position:absolute;inset:9px 9px auto auto;width:2px;height:8px;
+    background:var(--paper);transform-origin:bottom center;
+  }
+  h1{
+    font-family:"Tiro Bangla",serif;font-weight:400;
+    font-size:clamp(30px,6.2vw,46px);line-height:1.35;margin:0 0 10px;
+  }
+  .lede{color:var(--ink-soft);margin:0;max-width:44ch}
+
+  .panel{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:18px;padding:clamp(18px,4vw,26px);
+  }
+  .field-row{display:flex;flex-wrap:wrap;gap:14px}
+  .field{flex:1 1 200px;min-width:0}
+  label{display:block;font-size:14px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+  input[type="date"],input[type="time"]{
+    width:100%;padding:12px 14px;font:inherit;font-size:16px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:11px;
+  }
+  input:focus-visible,button:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+  .hint{font-size:14px;color:var(--ink-soft);margin:12px 0 0}
+
+  #out[hidden]{display:none}
+
+  .headline{
+    margin:34px 0 0;padding:clamp(20px,4vw,30px);border-radius:18px;
+    background:var(--surface);border:1px solid var(--line);
+    box-shadow:0 0 0 6px var(--glow);
+  }
+  .ymd{display:flex;flex-wrap:wrap;gap:clamp(18px,5vw,44px);align-items:baseline}
+  .unit .n{
+    font-family:"Tiro Bangla",serif;font-size:clamp(44px,12vw,78px);
+    line-height:1;letter-spacing:-.01em;display:block;
+  }
+  .unit .n.big{color:var(--marigold)}
+  .unit .k{font-size:15px;color:var(--ink-soft);letter-spacing:.02em}
+  .tick{
+    margin-top:22px;padding-top:18px;border-top:1px solid var(--line);
+    font-variant-numeric:tabular-nums;font-size:clamp(17px,4vw,21px);
+  }
+  .tick b{font-family:"Tiro Bangla",serif;font-weight:400;color:var(--alta)}
+
+  h2{
+    font-family:"Tiro Bangla",serif;font-weight:400;font-size:24px;
+    margin:44px 0 16px;
+  }
+  .totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .cell{background:var(--surface);padding:16px 18px}
+  .cell dt{font-size:14px;color:var(--ink-soft);margin:0}
+  .cell dd{margin:2px 0 0;font-family:"Tiro Bangla",serif;font-size:26px;line-height:1.2;
+    font-variant-numeric:tabular-nums}
+
+  .bday{margin-top:12px}
+  .bday .big{font-family:"Tiro Bangla",serif;font-size:clamp(26px,6vw,34px);line-height:1.3;margin:0}
+  .bar{height:9px;border-radius:99px;background:var(--line);margin:18px 0 8px;overflow:hidden}
+  .bar span{display:block;height:100%;background:var(--marigold);border-radius:99px;
+    transition:width .5s ease}
+  @media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+  .bar-meta{display:flex;justify-content:space-between;font-size:14px;color:var(--ink-soft)}
+
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:14px;color:var(--ink-soft)}
+  footer a{color:var(--alta)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="mark" aria-hidden="true"></div>
+    <h1>আপনি ঠিক কতক্ষণ ধরে বেঁচে আছেন?</h1>
+    <p class="lede">জন্মতারিখ লিখুন। বছর-মাস-দিন থেকে শুরু করে প্রতিটি সেকেন্ড পর্যন্ত হিসাব দেখুন, আর জানুন পরের জন্মদিন আসতে আর কতদিন বাকি।</p>
+  </header>
+
+  <div class="panel">
+    <div class="field-row">
+      <div class="field">
+        <label for="dob">জন্মতারিখ</label>
+        <input type="date" id="dob">
+      </div>
+      <div class="field">
+        <label for="tob">জন্মের সময় <span style="font-weight:400">(জানা না থাকলে খালি রাখুন)</span></label>
+        <input type="time" id="tob" step="1">
+      </div>
+    </div>
+    <p class="hint" id="hint">তারিখ বসালেই হিসাব নিজে থেকে চলতে শুরু করবে।</p>
+  </div>
+
+  <main id="out" hidden>
+    <section class="headline" aria-live="polite">
+      <div class="ymd">
+        <div class="unit"><span class="n big" id="yy">০</span><span class="k">বছর</span></div>
+        <div class="unit"><span class="n" id="mm">০</span><span class="k">মাস</span></div>
+        <div class="unit"><span class="n" id="dd">০</span><span class="k">দিন</span></div>
+      </div>
+      <p class="tick">আর <b id="hh">০</b> ঘন্টা <b id="mi">০</b> মিনিট <b id="ss">০</b> সেকেন্ড</p>
+    </section>
+
+    <h2>মোট হিসাবে</h2>
+    <dl class="totals">
+      <div class="cell"><dt>মোট মাস</dt><dd id="t-mo">০</dd></div>
+      <div class="cell"><dt>মোট সপ্তাহ</dt><dd id="t-wk">০</dd></div>
+      <div class="cell"><dt>মোট দিন</dt><dd id="t-dy">০</dd></div>
+      <div class="cell"><dt>মোট ঘন্টা</dt><dd id="t-hr">০</dd></div>
+      <div class="cell"><dt>মোট মিনিট</dt><dd id="t-mn">০</dd></div>
+      <div class="cell"><dt>মোট সেকেন্ড</dt><dd id="t-sc">০</dd></div>
+    </dl>
+
+    <h2>পরবর্তী জন্মদিন</h2>
+    <div class="bday">
+      <p class="big" id="bd-line">—</p>
+      <div class="bar"><span id="bar" style="width:0%"></span></div>
+      <div class="bar-meta">
+        <span id="bd-date">—</span>
+        <span id="bd-pct">—</span>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    এই পাতাটি সম্পূর্ণ আপনার ব্রাউজারেই চলে — কোনো তথ্য কোথাও পাঠানো হয় না।
+  </footer>
+</div>
+
+<script>
+(function(){
+  var BN = ["০","১","২","৩","৪","৫","৬","৭","৮","৯"];
+  function bn(n){
+    return String(n).replace(/\d/g, function(d){ return BN[+d]; });
+  }
+  function bnComma(n){
+    return bn(Number(n).toLocaleString("en-US"));
+  }
+  var MONTHS = ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+  var DAYS = ["রবিবার","সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার"];
+
+  var dob = document.getElementById("dob"),
+      tob = document.getElementById("tob"),
+      out = document.getElementById("out"),
+      hint = document.getElementById("hint"),
+      timer = null;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function birthDate(){
+    if(!dob.value) return null;
+    var p = dob.value.split("-").map(Number);
+    var t = (tob.value || "00:00:00").split(":").map(Number);
+    var d = new Date(p[0], p[1]-1, p[2], t[0]||0, t[1]||0, t[2]||0, 0);
+    if(isNaN(d.getTime())) return null;
+    return d;
+  }
+
+  // জন্মদিনের তারিখ নির্দিষ্ট বছরে (২৯ ফেব্রুয়ারি হলে ১ মার্চ ধরা হয়)
+  function bdayIn(year, b){
+    var d = new Date(year, b.getMonth(), b.getDate(), b.getHours(), b.getMinutes(), b.getSeconds());
+    if(d.getMonth() !== b.getMonth()){ d = new Date(year, 2, 1, b.getHours(), b.getMinutes(), b.getSeconds()); }
+    return d;
+  }
+
+  function render(){
+    var b = birthDate();
+    if(!b){ out.hidden = true; return; }
+    var now = new Date();
+
+    if(b > now){
+      out.hidden = true;
+      hint.textContent = "এই তারিখটি ভবিষ্যতে পড়েছে। জন্মতারিখ আজকের আগের হতে হবে।";
+      return;
+    }
+    hint.textContent = "হিসাব প্রতি সেকেন্ডে নিজে থেকে আপডেট হচ্ছে।";
+    out.hidden = false;
+
+    // বছর-মাস-দিন-ঘন্টা-মিনিট-সেকেন্ড
+    var y = now.getFullYear() - b.getFullYear(),
+        mo = now.getMonth() - b.getMonth(),
+        d = now.getDate() - b.getDate(),
+        h = now.getHours() - b.getHours(),
+        mi = now.getMinutes() - b.getMinutes(),
+        s = now.getSeconds() - b.getSeconds();
+
+    if(s < 0){ s += 60; mi--; }
+    if(mi < 0){ mi += 60; h--; }
+    if(h < 0){ h += 24; d--; }
+    if(d < 0){
+      var prevMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+      d += prevMonthDays; mo--;
+    }
+    if(mo < 0){ mo += 12; y--; }
+
+    $("yy").textContent = bn(y);
+    $("mm").textContent = bn(mo);
+    $("dd").textContent = bn(d);
+    $("hh").textContent = bn(h);
+    $("mi").textContent = bn(mi);
+    $("ss").textContent = bn(s);
+
+    // মোট হিসাব
+    var secs = Math.floor((now - b) / 1000);
+    $("t-sc").textContent = bnComma(secs);
+    $("t-mn").textContent = bnComma(Math.floor(secs/60));
+    $("t-hr").textContent = bnComma(Math.floor(secs/3600));
+    var days = Math.floor(secs/86400);
+    $("t-dy").textContent = bnComma(days);
+    $("t-wk").textContent = bnComma(Math.floor(days/7));
+    $("t-mo").textContent = bnComma(y*12 + mo);
+
+    // পরবর্তী জন্মদিন
+    var next = bdayIn(now.getFullYear(), b);
+    if(next <= now) next = bdayIn(now.getFullYear()+1, b);
+    var prev = bdayIn(next.getFullYear()-1, b);
+
+    var left = next - now;
+    var dLeft = Math.floor(left/86400000),
+        hLeft = Math.floor(left/3600000) % 24,
+        mLeft = Math.floor(left/60000) % 60,
+        sLeft = Math.floor(left/1000) % 60;
+
+    if(dLeft === 0 && hLeft === 0 && mLeft === 0 && sLeft < 2){
+      $("bd-line").textContent = "শুভ জন্মদিন! আজই সেই দিন।";
+    } else if(dLeft === 0){
+      $("bd-line").textContent = "আজই জন্মদিন — বাকি " + bn(hLeft) + " ঘন্টা " + bn(mLeft) + " মিনিট " + bn(sLeft) + " সেকেন্ড।";
+    } else {
+      $("bd-line").textContent = "বাকি " + bn(dLeft) + " দিন " + bn(hLeft) + " ঘন্টা " + bn(mLeft) + " মিনিট " + bn(sLeft) + " সেকেন্ড।";
+    }
+
+    var turning = next.getFullYear() - b.getFullYear();
+    $("bd-date").textContent = bn(next.getDate()) + " " + MONTHS[next.getMonth()] + " " +
+      bn(next.getFullYear()) + ", " + DAYS[next.getDay()] + " — " + bn(turning) + " বছর পূর্ণ হবে";
+
+    var pct = Math.min(100, Math.max(0, ((now - prev) / (next - prev)) * 100));
+    $("bar").style.width = pct.toFixed(2) + "%";
+    $("bd-pct").textContent = bn(Math.floor(pct)) + "% পেরিয়েছে";
+  }
+
+  function start(){
+    render();
+    if(timer) clearInterval(timer);
+    timer = setInterval(render, 1000);
+  }
+
+  dob.addEventListener("input", start);
+  tob.addEventListener("input", start);
+
+  // আজকের পরের তারিখ বেছে নেওয়া আটকাতে
+  var today = new Date();
+  dob.max = today.getFullYear() + "-" +
+    String(today.getMonth()+1).padStart(2,"0") + "-" +
+    String(today.getDate()).padStart(2,"0");
+})();
+</script>
+</body>
+</html>
